@@ -20,6 +20,28 @@ describe("text styles", () => {
     );
     expect(transformText("ç")).toBe("ç");
   });
+  it.each(["K", "ç", "ñ", "î", "û", "ĉ", "ĝ", "ŝ", "ǹ", "a\u031b", "e\u0306", "a\u0302\u0306", "a\u0301\u0300"])(
+    "preserves unsupported alphabet glyph %s verbatim",
+    (glyph) => {
+      expect(transformText(glyph)).toBe(glyph);
+    },
+  );
+  it.each([
+    ["ă", "aw"],
+    ["â", "aa"],
+    ["ê", "ee"],
+    ["ô", "oo"],
+    ["ơ", "ow"],
+    ["ư", "uw"],
+    ["í", "is"],
+    ["ỹ", "yx"],
+    ["Đ", "dd"],
+  ])("retains valid Vietnamese glyph %s across case and normalization", (glyph, name) => {
+    for (const input of [glyph, glyph.toUpperCase()]) {
+      expect(transformText(input.normalize("NFC"))).toBe(`:alphabet-yellow-${name}:`);
+      expect(transformText(input.normalize("NFD"))).toBe(`:alphabet-yellow-${name}:`);
+    }
+  });
   it("keeps repeated and edge spaces", () => {
     expect(transformText("  a ")).toBe("      :alphabet-yellow-a:   ");
   });

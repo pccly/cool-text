@@ -9,22 +9,30 @@ const EXPANDED_SPACE = "   ";
 export const ASCII_FONTS = ["Small", "Standard", "Slant", "Big"] as const;
 export const DEFAULT_FONT = "Small";
 export const TEXT_COLUMNS = 60;
-const TELEX_TONES: Record<string, string> = { "\u0300": "f", "\u0301": "s", "\u0309": "r", "\u0303": "x", "\u0323": "j" };
+const TELEX_TONES: Record<string, string> = {
+  "\u0300": "f",
+  "\u0301": "s",
+  "\u0309": "r",
+  "\u0303": "x",
+  "\u0323": "j",
+};
 
 /** `ậ` → `aaj`, `ư` → `uw`, `đ` → `dd`; undefined for anything outside the Vietnamese alphabet. */
 function telexName(glyph: string): string | undefined {
   if (/^[a-z]$/i.test(glyph)) return glyph;
   const [letter, ...marks] = glyph.normalize("NFD").toLowerCase();
-  let name = letter === "đ" ? "dd" : /^[a-z]$/.test(letter) ? letter : undefined;
-  if (!name) return;
+  const name = letter === "đ" ? "dd" : /^[a-z]$/.test(letter) ? letter : undefined;
+  if (!name || (!marks.length && letter !== "đ")) return;
+  let shape = "";
   let tone = "";
   for (const mark of marks) {
-    if (mark === "\u0302") name += letter;
-    else if (mark === "\u0306" || mark === "\u031b") name += "w";
-    else if (TELEX_TONES[mark]) tone += TELEX_TONES[mark];
+    if (mark === "\u0302" && /^[aeo]$/.test(letter) && !shape) shape = letter;
+    else if (mark === "\u0306" && letter === "a" && !shape) shape = "w";
+    else if (mark === "\u031b" && /^[ou]$/.test(letter) && !shape) shape = "w";
+    else if (TELEX_TONES[mark] && /^[aeiouy]$/.test(letter) && !tone) tone = TELEX_TONES[mark];
     else return;
   }
-  return name + tone;
+  return name + shape + tone;
 }
 
 figlet.parseFont("Standard", standard);
