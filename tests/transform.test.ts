@@ -9,7 +9,16 @@ describe("text styles", () => {
     expect(transformText("a !b")).toBe(":alphabet-yellow-a:   !:alphabet-white-b:");
   });
   it("preserves Unicode, line breaks, and the original UTF-16 color positions", () => {
-    expect(transformText("🫶é\nb")).toBe("🫶é\n:alphabet-yellow-b:");
+    expect(transformText("🫶ß\nb")).toBe("🫶ß\n:alphabet-yellow-b:");
+  });
+  it("maps Vietnamese letters to telex emoji names, composed or decomposed", () => {
+    expect(transformText("nhậu đi")).toBe(
+      ":alphabet-yellow-n::alphabet-white-h::alphabet-yellow-aaj::alphabet-white-u:   :alphabet-white-dd::alphabet-yellow-i:",
+    );
+    expect(transformText("Ợ ă ế".normalize("NFD"))).toBe(
+      ":alphabet-yellow-owj:   :alphabet-yellow-aw:   :alphabet-white-ees:",
+    );
+    expect(transformText("ç")).toBe("ç");
   });
   it("keeps repeated and edge spaces", () => {
     expect(transformText("  a ")).toBe("      :alphabet-yellow-a:   ");
